@@ -1,0 +1,12 @@
+@import 'bootstrap/scss/bootstrap.scss';
+
+.MessageForm {
+  height: 10vh;
+  max-height: 10vh;
+  background-color: #c2185b;
+  @extend .px-2;
+  form {
+    margin-top: 13px;
+  }
+}
+

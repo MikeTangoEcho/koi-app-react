@@ -1,0 +1,5 @@
+@import 'bootstrap/scss/bootstrap.scss';
+
+.Message {
+    @extend .mx-2, .p-2, .mb-1, .bg-light, .rounded;
+}
