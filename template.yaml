@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+    koi-app-react
+
+    Koi Chat frontend
+    
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html
+Parameters:
+    KoiDomainName:
+        Type: String
+        Default: koi-app-react.yourdomain.com
+        Description: |
+            Accepted domain on cloudfront.
+            Value should be accepted in CORS Allow-Origin on the koi-api stack
+    KoiBucketName:
+        Type: String
+        Default: koi-app-react
+        Description: |
+            Bucket name that will store the code. Regex ([a-z\-\.]+)
+
+Resources:
+    KoiBucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            # If not specified AWS will autogenerate one
+            BucketName: !Ref KoiBucketName
+
+    KoiOriginAccessIdentity:
+        Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+        Properties:
+            CloudFrontOriginAccessIdentityConfig:
+                Comment: !Sub "access-identity-${KoiBucketName}"
+
+    KoiBucketPolicy:
+        Type: AWS::S3::BucketPolicy
+        Properties: 
+            Bucket: !Ref KoiBucket
+            PolicyDocument:
+                Version: "2008-10-17"
+                Id: PolicyForCloudFrontPrivateContent
+                Statement: 
+                    -
+                        Sid: "1"
+                        Effect: Allow
+                        Principal: 
+                            # arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity EFF22Q75E0QL8
+                            AWS: !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${KoiOriginAccessIdentity}"
+                        Action: s3:GetObject
+                        Resource: !Sub "${KoiBucket.Arn}/*"
+
+    KoiDistribution:
+        Type: AWS::CloudFront::Distribution
+        Properties:
+            DistributionConfig:
+                # https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_DistributionConfig.html
+                Aliases:
+                    - !Ref KoiDomainName
+                Comment: KoiAppReact frontend app
+                # If you need to render the errors
+                # CustomErrorResponses:
+                #     -
+                #         ErrorCode: 404
+                #         ResponseCode: 200
+                #         ResponsePagePath: index.html
+                #     -
+                #         ErrorCode: 500
+                #         ResponseCode: 200
+                #         ResponsePagePath: index.html
+                DefaultCacheBehavior:
+                    # https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_DefaultCacheBehavior.html
+                    # Compress: true # Usefull if you have big files, Defaut: false
+                    # DefaultTTL: 86400 # Default: 1 day = 86400 seconds
+                    ForwardedValues:
+                        # https://docs.aws.amazon.com/fr_fr/AWSCloudFormation/latest/UserGuide/aws-properties-cloudfront-distribution-forwardedvalues.html
+                        QueryString: false
+                    TargetOriginId: koiAppReactOrigin # Must match one of the defined origins
+                    ViewerProtocolPolicy: redirect-to-https
+                DefaultRootObject: index.html
+                Enabled: true
+                IPV6Enabled: true # Default: true
+                # Hint for SEO:
+                # - Define oneor+ Origin linked to a lambda that generate your sitemap.xml or robots.txt
+                # - Define oneor+ Cache Behavior to match request /sitemap.xml or /robots.txt with a TargetOriginId linked to the lambda of your choice
+                Origins:
+                    -   Id: koiAppReactOrigin
+                        DomainName: !GetAtt KoiBucket.DomainName
+                        S3OriginConfig:
+                            OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${KoiOriginAccessIdentity}"
+                # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PriceClass.html
+                PriceClass: PriceClass_100
+                # Use it if you create certificate from CertManager
+                # ViewerCertificate:
+                #     AcmCertificateArn: ...
+Outputs:
+
+    KoiDistributionDomain:
+        Description: "Cloudfront distribution default domain"
+        Value: !GetAtt KoiDistribution.DomainName

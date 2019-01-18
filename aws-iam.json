@@ -1,0 +1,67 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "KarCloudformationSummary",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:GetTemplateSummary"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "KarCloudformation",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:*"
+            ],
+            "Resource": [
+                "arn:aws:cloudformation:*:*:stack/koi-app-react-stack/*",
+                "arn:aws:cloudformation:*:*:stackset/*:*"
+            ]
+        },
+        {
+            "Sid": "KarS3",
+			"Effect": "Allow",
+            "Action": [
+				"s3:*"
+			],
+			"Resource": [
+                "arn:aws:s3:::koi-app-react",
+                "arn:aws:s3:::*/*"
+			]
+        },
+        {
+            "Sid": "KarCloudfront",
+            "Effect":"Allow",
+            "Action":[
+               "acm:ListCertificates", 
+               "cloudfront:CreateDistribution",
+               "cloudfront:DeleteDistribution",
+               "cloudfront:GetDistribution",
+               "cloudfront:GetDistributionConfig",
+               "cloudfront:ListDistributions",
+               "cloudfront:UpdateDistribution",
+               "cloudfront:CreateInvalidation",
+               "cloudfront:GetInvalidation",
+               "cloudfront:ListInvalidations",
+               "cloudfront:ListCloudFrontOriginAccessIdentities",
+               "cloudfront:GetCloudFrontOriginAccessIdentity",
+               "cloudfront:GetCloudFrontOriginAccessIdentityConfig",
+               "cloudfront:CreateCloudFrontOriginAccessIdentity",
+               "cloudfront:UpdateCloudFrontOriginAccessIdentity",
+               "cloudfront:DeleteCloudFrontOriginAccessIdentity",
+               "cloudfront:TagResource",
+               "elasticloadbalancing:DescribeLoadBalancers",
+               "iam:ListServerCertificates",
+               "sns:ListSubscriptionsByTopic",
+               "sns:ListTopics",
+               "waf:GetWebACL",
+               "waf:ListWebACLs"
+            ],
+            "Resource":"*"
+        }
+    ]
+}
